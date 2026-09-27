@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Demande de rendez-vous</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/common.js" defer></script>
+  <script src="/formulaire.js" defer></script>
+</head>
+<body>
+  <header class="top">
+    <h1>Demande de rendez-vous avec le PDG</h1>
+    <a class="btn ghost" href="/connexion">Espace personnel</a>
+  </header>
+  <main>
+    <div id="succes" class="card" hidden>
+      <div class="alert success">Votre demande a bien été envoyée.</div>
+      <p>Référence : <strong id="reference"></strong></p>
+      <p>Elle a été transmise au secrétariat du PDG. Vous recevrez un e-mail dès qu’elle aura été traitée.</p>
+      <div class="actions"><button type="button" id="nouvelle">Faire une autre demande</button></div>
+    </div>
+
+    <form id="form" class="card" novalidate>
+      <p class="hint">Les champs marqués d’un <span class="req"></span> sont obligatoires.</p>
+      <div id="erreur-globale" class="alert error" role="alert" hidden></div>
+
+      <fieldset>
+        <legend>Vos informations</legend>
+        <div class="grid cols-3">
+          <div>
+            <label for="civilite">Civilité</label>
+            <select id="civilite" name="civilite">
+              <option value="">—</option>
+              <option>M.</option><option>Mme</option><option>Dr</option><option>Pr</option><option>Me</option>
+            </select>
+          </div>
+          <div>
+            <label for="prenom" class="req">Prénom</label>
+            <input id="prenom" name="prenom" autocomplete="given-name" required maxlength="80">
+            <div class="field-error" data-for="prenom"></div>
+          </div>
+          <div>
+            <label for="nom" class="req">Nom</label>
+            <input id="nom" name="nom" autocomplete="family-name" required maxlength="80">
+            <div class="field-error" data-for="nom"></div>
+          </div>
+        </div>
+        <div class="grid cols-2" data-mt>
+          <div>
+            <label for="organisation">Entreprise / organisation</label>
+            <input id="organisation" name="organisation" autocomplete="organization" maxlength="120">
+          </div>
+          <div>
+            <label for="fonction">Fonction</label>
+            <input id="fonction" name="fonction" autocomplete="organization-title" maxlength="120">
+          </div>
+          <div>
+            <label for="email" class="req">E-mail</label>
+            <input id="email" name="email" type="email" inputmode="email" autocomplete="email" required maxlength="160">
+            <div class="field-error" data-for="email"></div>
+          </div>
+          <div>
+            <label for="telephone" class="req">Téléphone</label>
+            <input id="telephone" name="telephone" type="tel" inputmode="tel" autocomplete="tel" required maxlength="20">
+            <div class="field-error" data-for="telephone"></div>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset data-mt>
+        <legend>Le rendez-vous</legend>
+        <div>
+          <label for="objet" class="req">Objet du rendez-vous</label>
+          <input id="objet" name="objet" required maxlength="200">
+          <div class="field-error" data-for="objet"></div>
+        </div>
+        <div class="grid cols-3" data-mt>
+          <div>
+            <label for="date" class="req">Date souhaitée</label>
+            <input id="date" name="date" type="date" required>
+            <div class="field-error" data-for="date"></div>
+          </div>
+          <div>
+            <label for="heure" class="req">Heure souhaitée</label>
+            <input id="heure" name="heure" type="time" step="900" required>
+            <div class="field-error" data-for="heure"></div>
+          </div>
+          <div>
+            <label for="duree" class="req">Durée</label>
+            <select id="duree" name="duree" required></select>
+            <div class="field-error" data-for="duree"></div>
+          </div>
+        </div>
+        <div class="grid cols-2" data-mt>
+          <div>
+            <label for="participants" class="req">Nombre de personnes (vous compris)</label>
+            <input id="participants" name="participants" type="number" inputmode="numeric" min="1" max="20" value="1" required>
+            <div class="field-error" data-for="participants"></div>
+          </div>
+          <div id="bloc-accompagnants" hidden>
+            <label for="accompagnants" class="req">Nom des accompagnants</label>
+            <textarea id="accompagnants" name="accompagnants" maxlength="500" rows="2"></textarea>
+            <div class="field-error" data-for="accompagnants"></div>
+          </div>
+        </div>
+        <div data-mt>
+          <label for="message">Informations complémentaires</label>
+          <textarea id="message" name="message" maxlength="2000"></textarea>
+        </div>
+      </fieldset>
+
+      <label class="check" data-mt>
+        <input type="checkbox" id="consentement" name="consentement" required>
+        <span>J’accepte que ces informations soient transmises au PDG, à son entourage habilité et au service de sécurité pour l’organisation et le contrôle d’accès du rendez-vous.</span>
+      </label>
+      <div class="field-error" data-for="consentement"></div>
+
+      <div class="actions end">
+        <button type="submit" id="envoyer">Envoyer la demande</button>
+      </div>
+    </form>
+  </main>
+</body>
+</html>
