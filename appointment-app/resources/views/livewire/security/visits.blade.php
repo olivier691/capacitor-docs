@@ -44,7 +44,7 @@
                 <label class="flex shrink-0 cursor-pointer flex-col items-center gap-1 text-xs font-medium">
                     <input type="checkbox" class="size-8 cursor-pointer accent-emerald-700 disabled:cursor-not-allowed"
                            wire:click="toggleArrival({{ $v->id }})" wire:loading.attr="disabled"
-                           @checked($v->arrived_at) @disabled(! $isToday)
+                           @checked($v->arrived_at) @disabled(! $isToday || ! $canCheckIn)
                            aria-label="Présence de {{ $v->fullName() }}">
                     Venu
                 </label>

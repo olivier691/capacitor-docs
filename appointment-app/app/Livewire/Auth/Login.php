@@ -33,7 +33,8 @@ class Login extends Component
             return null;
         }
 
-        if (! Auth::attempt(['email' => Str::lower($this->email), 'password' => $this->password], $this->remember)) {
+        $credentials = ['email' => Str::lower($this->email), 'password' => $this->password, 'is_active' => true];
+        if (! Auth::attempt($credentials, $this->remember)) {
             RateLimiter::hit($key, 15 * 60);
             $this->reset('password');
             $this->addError('email', 'Identifiant ou mot de passe incorrect.');
@@ -42,9 +43,10 @@ class Login extends Component
         }
 
         RateLimiter::clear($key);
+        // (Le middleware « active » refuse ensuite un compte sans aucun accès.)
         session()->regenerate();
 
-        return redirect()->intended(route(Auth::user()->role->homeRoute()));
+        return redirect()->intended(route('home'));
     }
 
     public function render()

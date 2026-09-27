@@ -2,14 +2,14 @@
 
 namespace App\Providers;
 
-use App\Enums\Role;
-use App\Models\User;
+use App\Http\Middleware\EnsureAccountIsActive;
 use App\Services\MicrosoftGraph\GraphClient;
 use App\Services\MicrosoftGraph\GraphMailTransport;
 use App\Services\OutlookCalendar;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
+use Spatie\Permission\Middleware\PermissionMiddleware;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -27,8 +27,8 @@ class AppServiceProvider extends ServiceProvider
     {
         Mail::extend('microsoft-graph', fn () => new GraphMailTransport($this->app->make(GraphClient::class)));
 
-        // Le PDG et son entourage gèrent les demandes ; la sécurité consulte et pointe les arrivées.
-        Gate::define('manage-appointments', fn (User $user) => $user->hasRole(Role::Direction));
-        Gate::define('record-arrival', fn (User $user) => $user->hasRole(Role::Security));
+        // Réapplique ces contrôles à chaque action Livewire, pas seulement au chargement de la page.
+        // Les droits eux-mêmes sont les permissions spatie/laravel-permission (voir App\Enums\Permission).
+        Livewire::addPersistentMiddleware([EnsureAccountIsActive::class, PermissionMiddleware::class]);
     }
 }

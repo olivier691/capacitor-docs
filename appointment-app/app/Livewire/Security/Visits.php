@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Security;
 
+use App\Enums\Permission;
 use App\Models\Appointment;
 use App\Services\AppointmentService;
 use Illuminate\Support\Carbon;
@@ -27,7 +28,7 @@ class Visits extends Component
 
     public function mount(): void
     {
-        Gate::authorize('record-arrival');
+        Gate::authorize(Permission::ViewVisits->value);
         $this->normalizeDate();
     }
 
@@ -58,7 +59,7 @@ class Visits extends Component
 
     public function toggleArrival(int $id, AppointmentService $service): void
     {
-        Gate::authorize('record-arrival');
+        Gate::authorize(Permission::RecordArrivals->value);
         $appointment = Appointment::findOrFail($id);
 
         try {
@@ -80,6 +81,7 @@ class Visits extends Component
     {
         return view('livewire.security.visits', [
             'isToday' => $this->date === today()->toDateString(),
+            'canCheckIn' => Auth::user()->can(Permission::RecordArrivals->value),
         ]);
     }
 }

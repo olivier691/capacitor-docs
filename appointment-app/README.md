@@ -5,8 +5,9 @@ Application **Laravel 13 + Livewire 4** (Tailwind CSS 4), responsive smartphone 
 | Espace | URL | Qui | Ce qu'on y fait |
 |--------|-----|-----|-----------------|
 | Formulaire public | `/` | Tout visiteur | Demande de rendez-vous : identité, organisation, coordonnées, objet, date, heure, durée, accompagnants, consentement. |
-| Direction | `/direction` | PDG et entourage habilité (rôle `direction`) | Voir les demandes, **valider** (en ajustant le créneau), **refuser**, **annuler**. Les chevauchements sont signalés. |
-| Sécurité | `/securite` | Service de sécurité (rôle `security`) | **Lecture seule** des rendez-vous validés par date, et case **« Venu »** à cocher le jour même. |
+| Direction | `/direction` | PDG et entourage habilité (rôle `Direction`) | Voir les demandes, **valider** (en ajustant le créneau), **refuser**, **annuler**. Les chevauchements sont signalés. |
+| Sécurité | `/securite` | Service de sécurité (rôle `Sécurité`) | **Lecture seule** des rendez-vous validés par date, et case **« Venu »** à cocher le jour même. |
+| Administration | `/admin/utilisateurs`, `/admin/roles` | Rôle `Administrateur` | Créer, modifier et désactiver les comptes ; créer des rôles et choisir leurs permissions. |
 
 ## Déroulement
 
@@ -32,18 +33,46 @@ cp .env.example .env
 php artisan key:generate
 php artisan migrate
 
-# Comptes (le mot de passe est demandé, 12 caractères minimum)
-php artisan app:user pdg@entreprise.com --name="Président Directeur Général" --role=direction
-php artisan app:user assistante@entreprise.com --name="Assistante du PDG" --role=direction
-php artisan app:user securite@entreprise.com --name="Poste de garde" --role=security
+# Premier compte administrateur (le mot de passe est demandé, 12 caractères minimum).
+# Les autres comptes se créent ensuite dans l'application, menu « Utilisateurs ».
+php artisan app:user admin@entreprise.com --name="Service informatique" --role=Administrateur
 
 php artisan serve
 ```
 
-Relancer `php artisan app:user` avec la même adresse change le mot de passe ou le rôle.
+Relancer `php artisan app:user` avec la même adresse change le mot de passe et les rôles. C'est aussi le moyen de
+récupérer l'accès si plus personne ne peut se connecter en administrateur.
 
 Pour tester avec des données fictives : `php artisan migrate:fresh --seed`. Les comptes de démonstration sont
-`direction@example.com` / `direction-demo` et `securite@example.com` / `securite-demo`. Ne pas utiliser en production.
+`admin@example.com` / `admin-demo`, `direction@example.com` / `direction-demo` et `securite@example.com` /
+`securite-demo`. Ne pas utiliser en production.
+
+## Rôles et permissions (spatie/laravel-permission)
+
+Les droits reposent sur des **permissions**, regroupées en **rôles**. Un compte peut avoir plusieurs rôles :
+par exemple, l'assistante du PDG peut être à la fois `Direction` et `Administrateur`.
+
+| Permission | Autorise | Rôle par défaut |
+|------------|----------|-----------------|
+| `appointments.view` | Voir toutes les demandes (espace direction) | Direction |
+| `appointments.decide` | Valider ou refuser une demande | Direction |
+| `appointments.cancel` | Annuler un rendez-vous validé | Direction |
+| `visits.view` | Voir les rendez-vous du jour (espace sécurité) | Sécurité |
+| `visits.check-in` | Cocher « Venu » | Sécurité |
+| `users.manage` | Gérer les comptes | Administrateur |
+| `roles.manage` | Gérer les rôles et leurs permissions | Administrateur |
+
+- Les permissions et les trois rôles par défaut sont créés par `php artisan migrate`. Ensuite, les rôles se modifient
+  dans l'application, menu « Rôles et permissions ». On peut par exemple créer un rôle « Accueil » qui consulte les
+  visites sans pouvoir les pointer.
+- Chaque page et chaque action est contrôlée côté serveur, pas seulement l'affichage des boutons.
+- Garde-fous : le rôle `Administrateur` ne peut être ni supprimé, ni renommé, ni privé de la gestion des comptes et
+  des rôles. Il reste toujours au moins un compte actif capable de gérer les utilisateurs, et on ne peut pas
+  désactiver son propre compte.
+- Un compte **désactivé** ne peut plus se connecter et il est déconnecté immédiatement ; son historique est conservé.
+  Un compte sans aucun rôle n'a accès à rien.
+- Pour ajouter une permission : créer un nouveau cas dans `app/Enums/Permission.php`, puis lancer
+  `php artisan app:permissions`.
 
 Tests : `php artisan test`.
 
@@ -86,7 +115,8 @@ Le fuseau horaire des rendez-vous et de l'agenda est `APP_TIMEZONE` (ex. `Africa
 | `app/Services/OutlookCalendar.php` | Création et suppression des événements Outlook |
 | `app/Services/MicrosoftGraph/` | Client Graph (jeton OAuth mis en cache) et transport mail `microsoft-graph` |
 | `app/Mail/`, `resources/views/mail/` | E-mails envoyés |
-| `app/Providers/AppServiceProvider.php` | Droits : `manage-appointments` (direction), `record-arrival` (sécurité) |
+| `app/Livewire/Admin/Users.php`, `Roles.php` | Administration des comptes et des rôles |
+| `app/Enums/Permission.php`, `app/Support/AccessControl.php` | Liste des permissions, rôles par défaut, garde-fous |
 
 ## Mise en production
 

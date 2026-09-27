@@ -62,10 +62,10 @@
                 </dl>
 
                 <div class="mt-4 flex flex-wrap gap-2">
-                    @if ($a->status === \App\Enums\AppointmentStatus::Pending)
+                    @if ($a->status === \App\Enums\AppointmentStatus::Pending && auth()->user()->can('appointments.decide'))
                         <button type="button" wire:click="open('approve', {{ $a->id }})" class="btn btn-success flex-1 sm:flex-none">Valider</button>
                         <button type="button" wire:click="open('reject', {{ $a->id }})" class="btn btn-danger flex-1 sm:flex-none">Refuser</button>
-                    @elseif ($a->status === \App\Enums\AppointmentStatus::Approved)
+                    @elseif ($a->status === \App\Enums\AppointmentStatus::Approved && auth()->user()->can('appointments.cancel'))
                         <button type="button" wire:click="open('cancel', {{ $a->id }})" class="btn btn-secondary">Annuler le rendez-vous</button>
                     @endif
                 </div>

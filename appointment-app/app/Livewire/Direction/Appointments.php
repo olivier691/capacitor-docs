@@ -3,6 +3,7 @@
 namespace App\Livewire\Direction;
 
 use App\Enums\AppointmentStatus;
+use App\Enums\Permission;
 use App\Models\Appointment;
 use App\Services\AppointmentService;
 use Illuminate\Http\Client\ConnectionException;
@@ -47,7 +48,17 @@ class Appointments extends Component
 
     public function mount(): void
     {
-        Gate::authorize('manage-appointments');
+        Gate::authorize(Permission::ViewAppointments->value);
+    }
+
+    /** Permission requise pour chaque action de la fenêtre de confirmation. */
+    private function permissionFor(?string $action): Permission
+    {
+        return match ($action) {
+            'approve', 'reject' => Permission::DecideAppointments,
+            'cancel' => Permission::CancelAppointments,
+            default => abort(400),
+        };
     }
 
     #[Computed]
@@ -77,8 +88,7 @@ class Appointments extends Component
 
     public function open(string $action, int $id): void
     {
-        Gate::authorize('manage-appointments');
-        abort_unless(in_array($action, ['approve', 'reject', 'cancel'], true), 400);
+        Gate::authorize($this->permissionFor($action)->value);
 
         $appointment = Appointment::findOrFail($id);
         $this->resetValidation();
@@ -108,7 +118,7 @@ class Appointments extends Component
 
     public function confirm(AppointmentService $service, bool $force = false): void
     {
-        Gate::authorize('manage-appointments');
+        Gate::authorize($this->permissionFor($this->action)->value);
         $appointment = Appointment::findOrFail($this->appointmentId);
         $user = Auth::user();
 

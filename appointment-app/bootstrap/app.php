@@ -12,9 +12,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->alias(['role' => \App\Http\Middleware\EnsureUserHasRole::class]);
+        $middleware->alias([
+            'active' => \App\Http\Middleware\EnsureAccountIsActive::class,
+            'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+        ]);
         $middleware->redirectGuestsTo(fn () => route('login'));
-        $middleware->redirectUsersTo(fn (Request $request) => route($request->user()->role->homeRoute()));
+        $middleware->redirectUsersTo(
+            fn (Request $request) => route(\App\Support\AccessControl::homeRouteFor($request->user()) ?? 'booking')
+        );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
