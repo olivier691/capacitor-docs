@@ -3,8 +3,11 @@
 namespace App\Services\MicrosoftGraph;
 
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use RuntimeException;
 
 /**
  * Client minimal pour Microsoft Graph, authentifié par le flux "client credentials"
@@ -56,17 +59,34 @@ class GraphClient
             return $token;
         }
 
-        $response = Http::asForm()
-            ->timeout(15)
-            ->post('https://login.microsoftonline.com/'.rawurlencode($this->tenantId).'/oauth2/v2.0/token', [
+        try {
+            $response = Http::asForm()
+                ->timeout(15)
+                ->post('https://login.microsoftonline.com/'.rawurlencode($this->tenantId).'/oauth2/v2.0/token', [
+                    'client_id' => $this->clientId,
+                    'client_secret' => $this->clientSecret,
+                    'scope' => 'https://graph.microsoft.com/.default',
+                    'grant_type' => 'client_credentials',
+                ])
+                ->throw();
+        } catch (RequestException $e) {
+            // Le message d'erreur Azure AD ne contient jamais le secret : sûr à journaliser.
+            Log::error('Échec de l\'authentification Microsoft Graph.', [
+                'tenant_id' => $this->tenantId,
                 'client_id' => $this->clientId,
-                'client_secret' => $this->clientSecret,
-                'scope' => 'https://graph.microsoft.com/.default',
-                'grant_type' => 'client_credentials',
-            ])
-            ->throw();
+                'status' => $e->response->status(),
+                'body' => $e->response->json('error_description', $e->response->body()),
+            ]);
+
+            throw $e;
+        }
 
         $token = $response->json('access_token');
+
+        if (blank($token)) {
+            throw new RuntimeException('Microsoft Graph n\'a renvoyé aucun jeton d\'accès.');
+        }
+
         Cache::put($cacheKey, $token, max(60, (int) $response->json('expires_in', 3600) - 300));
 
         return $token;
