@@ -1,0 +1,46 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../../app/Enums/*.php';
+
+@theme {
+    --font-sans: 'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --color-brand: #0f4c81;
+    --color-brand-dark: #0b3a63;
+}
+
+@utility field-label {
+    @apply mb-1 block text-sm font-medium text-slate-700;
+}
+@utility field-input {
+    @apply block min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-base shadow-sm
+        focus:border-brand focus:ring-2 focus:ring-brand/30 focus:outline-none aria-[invalid=true]:border-red-500;
+}
+@utility field-error {
+    @apply mt-1 text-sm text-red-700;
+}
+@utility card {
+    @apply rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6;
+}
+@utility btn {
+    @apply inline-flex min-h-11 cursor-pointer items-center justify-center rounded-lg px-4 py-2 font-semibold transition
+        focus:ring-2 focus:ring-brand/40 focus:outline-none disabled:cursor-wait disabled:opacity-60;
+}
+@utility btn-primary {
+    @apply bg-brand text-white hover:bg-brand-dark;
+}
+@utility btn-success {
+    @apply bg-emerald-700 text-white hover:bg-emerald-800;
+}
+@utility btn-danger {
+    @apply bg-red-700 text-white hover:bg-red-800;
+}
+@utility btn-secondary {
+    @apply border border-slate-300 bg-white text-slate-800 hover:bg-slate-50;
+}
+
+.required::after {
+    content: ' *';
+    color: var(--color-red-600);
+}
